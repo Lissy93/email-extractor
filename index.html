@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Email Extractor Tool</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Just a simple tool to bulk extract email addresses from text">
+    <meta name="keywords" content="email,extract,regex,javascript,address">
+    <meta name="author" content="Alicia Sykes">
+    <meta property="og:title" content="Email Extractor Tool">
+    <meta property="og:description" content="Just a simple tool to bulk extract email addresses from text">
+    <meta property="og:image" content="https://i.imgur.com/fyI7fUF.png">
+    <meta property="og:url" content="https://email-extractor.netlify.com">
+    <link rel="icon" href="http://aliciasykes.com/favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Comfortaa" rel="stylesheet">
+</head>
+    
+
+    <body>
+        <div id="app" class="wrapper">
+            <main>
+                <h1>Email Extractor Tool</h1>
+                <p class="subtitle">Got a bunch of text that you need to get email addresses out of?</p>
+                <textarea placeholder="Just paste it here..." v-model="allTheText"></textarea>
+                <div class="results" v-if="justTheEmails.length > 0">
+                    <p class="subtitle">Email addresses found:</p>
+                    <div v-for="emailAddress in justTheEmails" class="result-item">
+                        <p class="result-item-text">{{ emailAddress }}</p>
+                        <span class="invisible-comma">,</span>
+                    </div>
+                    <div class="copy-to-clipboard" v-on:click="copyToClipboard">
+                        Copy to Clipboard
+                    </div>
+                </div>
+                <small>
+                    Everything is happening client-side (aka on your browser), so no email addresses are sent over the internet.
+                </small>
+            </main>
+        </div>
+        
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+        
+        <script>
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    allTheText: '',
+                    justTheEmails: []
+                },
+                methods: {
+                    doTheMagic: function (userInput) {
+                        if (!userInput) return [];
+                        const emails = userInput.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
+                        return emails? emails: [];
+                    },
+                    makeClipboardResult: function () {
+                        return this.$data.justTheEmails.reduce(
+                            (result, emailAddress) => result+= ", " + emailAddress
+                        );
+                    },
+                    copyToClipboard: function () {
+                        var str = this.makeClipboardResult();
+                        var el = document.createElement('textarea');
+                        el.value = str;
+                        el.setAttribute('readonly', '');
+                        el.style = {position: 'absolute', left: '-9999px'};
+                        document.body.appendChild(el);
+                        el.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(el);
+                        alert(`${this.$data.justTheEmails.length} email addresses were copied to your clipboard 🙌`);
+                    }
+                },
+                watch: {
+                    allTheText: function(userInput) {
+                        this.justTheEmails = this.doTheMagic(userInput);
+                    }
+                }
+            })
+        </script>
+
+
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+                min-height: 100%;
+            }
+            body {
+                background: #4da1ff;  /* fallback for old browsers */
+                background: -webkit-linear-gradient(to top, #bc93ed, #4da1ff);  /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to top, #bc93ed, #4da1ff); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                background-repeat: none;
+                background-attachment: fixed;
+            }
+            h1, p, textarea, div {
+                font-family: 'Comfortaa', cursive;
+            }
+            ::selection {
+                background: #f84e89;
+                color: #FFF;
+            }
+            .wrapper {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+            }
+
+            main {
+                display: flex;
+                flex-direction: column;
+                margin: 2em;
+                padding: 1em;
+                background: #FFF;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+                max-width: 800px;
+            }
+
+            h1 {
+                margin: 0;
+                color: #4c94e7;
+                font-weight: normal;
+                text-align: center;
+                padding: 0.5em;
+                font-size: 3em;
+            }
+
+            .subtitle {
+                color: #919191;
+            }
+
+            small {
+                margin: 0.5em;
+                color: #919191;
+                font-size: 0.7em;
+            }
+
+            textarea {
+                border: 2px solid #4c94e7;
+                border-radius: 5px;
+                padding: 0.5em;
+                resize: none;
+                min-height: 150px;
+                color: #919191;
+            }
+
+            .results {
+                border-radius: 5px;
+                padding: 0.5em;
+                margin: 0.5em 0;
+            }
+            .result-item {
+                color: #919191;
+                margin: 0.2em;
+                display: inline-block;
+            }
+            .result-item-text {
+                font-size: 1rem;
+                border: 2px solid #4175b3;
+                border-radius: 4px;
+                padding: 0.2em 0.4em;
+                margin: 0;
+
+            }
+            .invisible-comma {
+                position: absolute;
+                visibility: hidden;
+            }
+
+            .copy-to-clipboard {
+                background: #f84e89;
+                width: 280px;
+                text-align: center;
+                margin: 1em auto;
+                padding: 1em;
+                border-radius: 5px;
+                color: #FFF;
+                cursor: pointer;
+                border: 2px solid #FFF;
+            }
+            .copy-to-clipboard:hover {
+                background: #FFF;
+                color: #f84e89;
+                border-color: #f84e89;
+            }
+
+
+        </style>
+    </body>
+
+</html>
